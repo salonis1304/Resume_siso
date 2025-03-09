@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Resume Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            width: 80%;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+        h2 {
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input, select, textarea {
+            width: 90%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: white;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .row input, .row select {
+            width: 45%;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .section {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .experience-entry, .education-entry {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+        }
+        .radio-group {
+            display: flex;
+            align-items: center;
+        }
+        .radio-group input {
+            width: auto;
+            margin-right: 5px;
+        }
+        .radio-group label {
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .skill-item {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+        }
+        .remove-skill {
+            margin-left: 8px;
+            cursor: pointer;
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Resume Form</h2>
+        
+        <div class="section" id="basicDetails">
+            <h3>Basic Details</h3>
+            <div class="row">
+                <input type="text" placeholder="Name">
+                <input type="email" placeholder="Email">
+            </div>
+            <div class="row">
+                <input type="text" placeholder="Phone No.">
+                <input type="text" placeholder="Current City">
+            </div>
+        </div>
+        
+        <div class="section" id="experienceSection">
+            <h3>Experience</h3>
+            <button type="button" onclick="addExperience()">Add Experience</button>
+            <div id="experienceList"></div>
+        </div>
+        
+        <div class="section" id="educationSection">
+            <h3>Education</h3>
+            <button type="button" onclick="addEducation()">Add Education</button>
+            <div id="educationList"></div>
+        </div>
+
+        <div class="section" id="certificationSection">
+            <h3>Certifications</h3>
+            <button type="button" onclick="addCertification()">Add Certification</button>
+            <div id="certificationList"></div>
+        </div>
+
+        <div class="section" id="keySkills">
+            <h3>Key Skills</h3>
+            <input type="text" id="skillInput" placeholder="Enter a skill">
+            <button type="button" onclick="addSkill()">Add Skill</button>
+            <div id="skillsList"></div>
+        </div>
+
+        <button type="button" onclick="submitForm()">Submit</button>
+
+    </div>
+
+    <script>
+        function addExperience() {
+            let expDiv = document.createElement('div');
+            expDiv.className = 'experience-entry';
+            expDiv.innerHTML = `
+                <label>Company Name</label>
+                <input type="text" class="companyName">
+                <label>Designation</label>
+                <input type="text" class="designation">
+                <label>Employment Type</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="employmentType_${Date.now()}" value="Full Time"> Full Time</label>
+                    <label><input type="radio" name="employmentType_${Date.now()}" value="Part Time"> Part Time</label>
+                </div>
+                <label>Joining Date - Leaving Date</label>
+                <div class="row">
+                    <input type="date" class="joiningDate">
+                    <input type="date" class="leavingDate">
+                </div>
+                <div>
+                <label>Job Profile Description</label>
+                <textarea class="jobDescription"></textarea>
+                </div>
+                <button type="button" onclick="saveExperience(this)">Save</button>
+            `;
+            document.getElementById('experienceList').appendChild(expDiv);
+        }
+
+        function saveExperience(button) {
+            let experienceDiv = button.parentElement;
+            let companyName = experienceDiv.querySelector(".companyName").value;
+            let designation = experienceDiv.querySelector(".designation").value;
+            let employmentType = experienceDiv.querySelector("input[type='radio']:checked");
+            let joiningDate = experienceDiv.querySelector(".joiningDate").value;
+            let leavingDate = experienceDiv.querySelector(".leavingDate").value;
+            let jobDescription = experienceDiv.querySelector(".jobDescription").value;
+
+            // Ensure employmentType is not null before accessing .value
+            let employmentTypeValue = employmentType ? employmentType.value : "Not Specified";
+
+            experienceDiv.innerHTML = `
+                      <p><strong>${designation} at ${companyName}</strong></p>
+                      <p><em>${employmentTypeValue}</em></p>
+                      <p>Duration: ${joiningDate} - ${leavingDate}</p>
+                      <p>Job Description: ${jobDescription}</p>
+`;
+        }
+
+        function addEducation() {
+            let uniqueId = Date.now(); // Unique ID for radio buttons
+            let eduDiv = document.createElement('div');
+            eduDiv.className = 'education-entry';
+            eduDiv.innerHTML = `
+                <label>Education Type</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="educationType_${uniqueId}" value="Graduate"> Graduate</label>
+                    <label><input type="radio" name="educationType_${uniqueId}" value="Post Graduate"> Post Graduate</label>
+                </div>
+                <label>University Name</label>
+                <input type="text" class="universityName">
+                <label>Course</label>
+                <select class="course">
+                    <option value="B.Tech">B.Tech</option>
+                    <option value="B.Sc">B.Sc</option>
+                    <option value="B.Com">B.Com</option>
+                    <option value="BCA">BCA</option>
+                    <option value="MCA">MCA</option>
+                    <option value="M.Tech">M.Tech</option>
+                </select>
+                <label>Specialization</label>
+                <input type="text" class="specialization">
+                <label>Course Duration</label>
+                <div class="row">
+                    <select class="courseFrom">
+                        <option disabled selected>From Year</option>
+                        ${generateYearOptions()}
+                    </select>
+                    <select class="courseTo">
+                        <option disabled selected>To Year</option>
+                        ${generateYearOptions()}
+                    </select>
+                </div>
+                <div>
+                <label>Aggregate Percentage</label>
+                <input type="text" class="percentage">
+                </div>
+                <button type="button" onclick="saveEducation(this)">Save</button>
+            `;
+            document.getElementById('educationList').appendChild(eduDiv);
+        }
+
+        function saveEducation(button) {
+            let parent = button.parentElement;
+            let educationType = parent.querySelector('input[type="radio"]:checked')?.value || "Not Specified";
+            let universityName = parent.querySelector('.universityName').value;
+            let course = parent.querySelector('.course').value;
+            let specialization = parent.querySelector('.specialization').value;
+            let courseFrom = parent.querySelector('.courseFrom').value;
+            let courseTo = parent.querySelector('.courseTo').value;
+            let percentage = parent.querySelector('.percentage').value;
+
+            parent.innerHTML = `
+                <p><strong>${educationType} - ${course} (${specialization})</strong></p>
+                <p><em>${universityName}</em></p>
+                <p>Duration: ${courseFrom} - ${courseTo}, Percentage: ${percentage}%</p>
+            `;
+        }
+
+        function generateYearOptions() {
+            let currentYear = new Date().getFullYear();
+            let options = "";
+            for (let i = currentYear; i >= 1950; i--) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            return options;
+        }
+
+        function addCertification() {
+            let certDiv = document.createElement('div');
+            certDiv.className = 'certification-entry';
+            certDiv.innerHTML = `
+                <label>Certification Name</label>
+                <input type="text" class="certName">
+                <label>Completion ID</label>
+                <input type="text" class="certID">
+                <label>Expiry Date</label>
+                <input type="date" class="expiryDate">
+                <div class="radio-group">
+                    <input type="checkbox" class="noExpiry" onclick="toggleExpiry(this)">
+                    <label>This certificate does not expire</label>
+                </div>
+                <button type="button" onclick="saveCertification(this)">Save</button>
+            `;
+            document.getElementById('certificationList').appendChild(certDiv);
+        }
+
+        function toggleExpiry(checkbox) {
+            let expiryDateInput = checkbox.closest('.certification-entry').querySelector('.expiryDate');
+            expiryDateInput.disabled = checkbox.checked;
+        }
+
+        function saveCertification(button) {
+            let certEntry = button.closest('.certification-entry');
+            let certName = certEntry.querySelector('.certName').value;
+            let certID = certEntry.querySelector('.certID').value;
+            let expiryDate = certEntry.querySelector('.expiryDate').value;
+            let noExpiry = certEntry.querySelector('.noExpiry').checked;
+            
+            if (certName.trim() === '' || certID.trim() === '') {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            certEntry.innerHTML = `<p><strong>Certification:</strong> ${certName} | <strong>ID:</strong> ${certID} | <strong>Expiry:</strong> ${noExpiry ? 'Does not expire' : expiryDate}</p> `;
+        }
+
+        function addSkill() {
+            let skillInput = document.getElementById('skillInput');
+            if (skillInput.value.trim() !== '') {
+                let skillDiv = document.createElement('div');
+                skillDiv.className = 'skill-item';
+                skillDiv.innerHTML = `${skillInput.value} <span class="remove-skill" onclick="removeSkill(this)">×</span>`;
+                document.getElementById('skillsList').appendChild(skillDiv);
+                skillInput.value = '';
+            }
+        }
+
+        function removeSkill(element) {
+            element.parentElement.remove();
+        }
+
+        function submitForm() {
+            window.location.href = "./Submit.html";
+        }
+
+    </script>
+</body>
+</html>
