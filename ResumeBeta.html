@@ -36,11 +36,14 @@
             background-color: white;
         }
         .row {
-            display: flex;
-            justify-content: space-between;
-        }
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+}
         .row input, .row select {
-            width: 45%;
+            width: 80%;
         }
         button {
             background-color: #007bff;
@@ -97,6 +100,64 @@
             color: red;
             font-weight: bold;
         }
+        .date-picker {
+                    flex: 1;
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    }
+ 
+        .date-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .calendar {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+        .calendar table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .calendar th, .calendar td {
+            text-align: center;
+            padding: 5px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+        .calendar th {
+            background: #f4f4f4;
+        }
+        .calendar td:hover {
+            background: #ddd;
+        }
+        .calendar .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .calendar .prev, .calendar .next {
+            cursor: pointer;
+            padding: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+        }
+        .calendar .prev:hover, .calendar .next:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -145,52 +206,153 @@
     </div>
 
     <script>
-        function addExperience() {
-            let expDiv = document.createElement('div');
-            expDiv.className = 'experience-entry';
-            expDiv.innerHTML = `
-                <label>Company Name</label>
-                <input type="text" class="companyName">
-                <label>Designation</label>
-                <input type="text" class="designation">
-                <label>Employment Type</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="employmentType_${Date.now()}" value="Full Time"> Full Time</label>
-                    <label><input type="radio" name="employmentType_${Date.now()}" value="Part Time"> Part Time</label>
+        let currentDate = new Date();
+
+function addExperience() {
+    let uniqueId = Date.now(); // Unique ID for each calendar
+    let expDiv = document.createElement('div');
+    expDiv.className = 'experience-entry';
+    expDiv.innerHTML = `
+        <label>Company Name</label>
+        <input type="text" class="companyName">
+        <label>Designation</label>
+        <input type="text" class="designation">
+        <label>Employment Type</label>
+        <div class="radio-group">
+            <label><input type="radio" name="employmentType_${uniqueId}" value="Full Time"> Full Time</label>
+            <label><input type="radio" name="employmentType_${uniqueId}" value="Part Time"> Part Time</label>
+        </div>
+        <label>Joining Date - Leaving Date</label>
+        <div class="row">
+            <div class="date-picker">
+                <input type="text" class="date-input" id="joiningDate_${uniqueId}" readonly placeholder="Joining Date">
+                <div class="calendar" id="calendar_${uniqueId}" data-target="joiningDate_${uniqueId}">
+                    <div class="header">
+                        <button class="prev" onclick="changeMonth(${uniqueId}, -1)">❮</button>
+                        <span id="monthYear_${uniqueId}"></span>
+                        <button class="next" onclick="changeMonth(${uniqueId}, 1)">❯</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calendar-body_${uniqueId}"></tbody>
+                    </table>
                 </div>
-                <label>Joining Date - Leaving Date</label>
-                <div class="row">
-                    <input type="date" class="joiningDate">
-                    <input type="date" class="leavingDate">
+            </div>
+
+            <div class="date-picker">
+                <input type="text" class="date-input" id="leavingDate_${uniqueId}" readonly placeholder="Leaving Date">
+                <div class="calendar" id="calendar2_${uniqueId}" data-target="leavingDate_${uniqueId}">
+                    <div class="header">
+                        <button class="prev" onclick="changeMonth(${uniqueId}, -1, true)">❮</button>
+                        <span id="monthYear2_${uniqueId}"></span>
+                        <button class="next" onclick="changeMonth(${uniqueId}, 1, true)">❯</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calendar-body2_${uniqueId}"></tbody>
+                    </table>
                 </div>
-                <div>
-                <label>Job Profile Description</label>
-                <textarea class="jobDescription"></textarea>
-                </div>
-                <button type="button" onclick="saveExperience(this)">Save</button>
-            `;
-            document.getElementById('experienceList').appendChild(expDiv);
+            </div>
+        </div>
+        <div>
+        <label>Job Profile Description</label>
+        <textarea class="jobDescription"></textarea>
+        </div>
+        <button type="button" onclick="saveExperience(this)">Save</button>
+    `;
+    document.getElementById('experienceList').appendChild(expDiv);
+
+    document.getElementById(`joiningDate_${uniqueId}`).addEventListener("click", function() {
+        document.getElementById(`calendar_${uniqueId}`).style.display = "block";
+        generateCalendar(currentDate, uniqueId, false);
+    });
+
+    document.getElementById(`leavingDate_${uniqueId}`).addEventListener("click", function() {
+        document.getElementById(`calendar2_${uniqueId}`).style.display = "block";
+        generateCalendar(currentDate, uniqueId, true);
+    });
+}
+
+function generateCalendar(date, uniqueId, isLeaving) {
+            let calendarBody = document.getElementById(isLeaving ? `calendar-body2_${uniqueId}` : `calendar-body_${uniqueId}`);
+            let monthYear = document.getElementById(isLeaving ? `monthYear2_${uniqueId}` : `monthYear_${uniqueId}`);
+            calendarBody.innerHTML = "";
+
+            let year = date.getFullYear();
+            let month = date.getMonth();
+            monthYear.textContent = `${date.toLocaleString('default', { month: 'long' })} ${year}`;
+
+            let firstDay = new Date(year, month, 1).getDay();
+            let lastDate = new Date(year, month + 1, 0).getDate();
+            
+            let row = document.createElement("tr");
+
+            for (let i = 0; i < firstDay; i++) {
+                row.appendChild(document.createElement("td"));
+            }
+
+            for (let day = 1; day <= lastDate; day++) {
+                let cell = document.createElement("td");
+                cell.textContent = day;
+                cell.addEventListener("click", function() {
+                    let selectedDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                    document.getElementById(isLeaving ? `leavingDate_${uniqueId}` : `joiningDate_${uniqueId}`).value = selectedDate;
+                    document.getElementById(isLeaving ? `calendar2_${uniqueId}` : `calendar_${uniqueId}`).style.display = "none";
+                });
+                row.appendChild(cell);
+
+                if ((firstDay + day) % 7 === 0) {
+                    calendarBody.appendChild(row);
+                    row = document.createElement("tr");
+                }
+            }
+            calendarBody.appendChild(row);
         }
+
+        function changeMonth(uniqueId, step, isLeaving = false) {
+            currentDate.setMonth(currentDate.getMonth() + step);
+            generateCalendar(currentDate, uniqueId, isLeaving);
+        }
+
+        document.addEventListener("click", function(event) {
+            document.querySelectorAll(".calendar").forEach(calendar => {
+                if (!calendar.contains(event.target) && event.target.className !== "date-input") {
+                    calendar.style.display = "none";
+                }
+            });
+        });
 
         function saveExperience(button) {
-            let experienceDiv = button.parentElement;
-            let companyName = experienceDiv.querySelector(".companyName").value;
-            let designation = experienceDiv.querySelector(".designation").value;
-            let employmentType = experienceDiv.querySelector("input[type='radio']:checked");
-            let joiningDate = experienceDiv.querySelector(".joiningDate").value;
-            let leavingDate = experienceDiv.querySelector(".leavingDate").value;
-            let jobDescription = experienceDiv.querySelector(".jobDescription").value;
+    let experienceDiv = button.parentElement;
+    let companyName = experienceDiv.querySelector(".companyName").value;
+    let designation = experienceDiv.querySelector(".designation").value;
+    let employmentType = experienceDiv.querySelector("input[type='radio']:checked");
+    let joiningDate = experienceDiv.querySelector(".date-picker .date-input").value;
+    let leavingDate = experienceDiv.querySelectorAll(".date-picker .date-input")[1].value;
+    let jobDescription = experienceDiv.querySelector(".jobDescription").value;
 
-            // Ensure employmentType is not null before accessing .value
-            let employmentTypeValue = employmentType ? employmentType.value : "Not Specified";
+    let employmentTypeValue = employmentType ? employmentType.value : "Not Specified";
 
-            experienceDiv.innerHTML = `
-                      <p><strong>${designation} at ${companyName}</strong></p>
-                      <p><em>${employmentTypeValue}</em></p>
-                      <p>Duration: ${joiningDate} - ${leavingDate}</p>
-                      <p>Job Description: ${jobDescription}</p>
-`;
-        }
+    if (!companyName || !designation || !joiningDate || !leavingDate) {
+        alert("Please fill out all fields before saving.");
+        return;
+    }
+
+    experienceDiv.innerHTML = `
+        <p><strong>${designation} at ${companyName}</strong></p>
+        <p><em>${employmentTypeValue}</em></p>
+        <p><strong>Duration:</strong> ${joiningDate} to ${leavingDate}</p>
+        <p><strong>Job Description:</strong> ${jobDescription}</p>
+    `;
+}
 
         function addEducation() {
             let uniqueId = Date.now(); // Unique ID for radio buttons
@@ -248,7 +410,7 @@
             parent.innerHTML = `
                 <p><strong>${educationType} - ${course} (${specialization})</strong></p>
                 <p><em>${universityName}</em></p>
-                <p>Duration: ${courseFrom} - ${courseTo}, Percentage: ${percentage}%</p>
+                <p><strong>Duration:</strong> ${courseFrom} - ${courseTo},<strong>Aggregate Percentage: ${percentage}%</strong></p>
             `;
         }
 
